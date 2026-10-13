@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TczewBooster — More FPS. Less latency.</title>
+<meta name="description" content="TczewBooster is a Windows optimizer for gamers: one-click system tweaks, game profiles, GPU overclock and cleanup." />
+<meta property="og:title" content="TczewBooster — More FPS. Less latency." />
+<meta property="og:description" content="A Windows optimizer for gamers: one-click tweaks, game profiles, GPU overclock and cleanup." />
+<meta property="og:image" content="img/thumbnail.jpg" />
+<link rel="icon" href="img/logo.png" />
+<style>
+  :root {
+    --bg: #0b0b0e;
+    --panel: #15161b;
+    --line: rgba(255, 255, 255, 0.1);
+    --text: #f2f3f7;
+    --soft: #a8b0c0;
+    --muted: #747c8e;
+    --silver: #e8e8ee;
+    --green: #00ff88;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---- top bar */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(14px);
+    background: rgba(11, 11, 14, 0.72);
+    border-bottom: 1px solid var(--line);
+  }
+  header .wrap { display: flex; align-items: center; height: 64px; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: 2px; font-size: 15px; }
+  .brand img { width: 34px; height: 34px; border-radius: 10px; }
+  .brand i { font-style: normal; color: #9aa3b5; }
+  .langs { margin-left: auto; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); }
+  .langs button {
+    font: inherit; font-size: 12px; font-weight: 800; letter-spacing: 1px;
+    color: var(--muted); background: none; border: 0; cursor: pointer;
+    padding: 6px 12px; border-radius: 999px; transition: color 0.2s, background 0.2s;
+  }
+  .langs button:hover { color: var(--text); }
+  .langs button.on { background: var(--silver); color: #101014; }
+  .button {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-weight: 800; border-radius: 14px; cursor: pointer;
+    background: var(--silver); color: #101014;
+    padding: 10px 18px; font-size: 14px;
+    transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+  }
+  .button:hover { transform: translateY(-2px); background: #fff; box-shadow: 0 12px 34px rgba(255, 255, 255, 0.16); }
+  .button.big { padding: 17px 30px; font-size: 18px; border-radius: 18px; }
+  .button svg { flex: none; }
+
+  /* ---- hero */
+  .hero { position: relative; padding: 84px 0 96px; }
+  .hero::before {
+    content: ""; position: absolute; inset: -64px 0 0; z-index: -1;
+    background:
+      radial-gradient(760px 520px at 78% 40%, rgba(0, 255, 136, 0.13), transparent 64%),
+      radial-gradient(640px 460px at 6% 96%, rgba(150, 165, 200, 0.14), transparent 66%),
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 48px 48px,
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 48px 48px;
+    mask-image: linear-gradient(#000 55%, transparent);
+  }
+  .hero .wrap { display: grid; grid-template-columns: 1fr 1.12fr; gap: 48px; align-items: center; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--green); background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.25);
+    padding: 6px 12px; border-radius: 999px;
+  }
+  .tag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); }
+  h1 { font-size: clamp(44px, 6.2vw, 82px); line-height: 0.98; font-weight: 900; letter-spacing: -2px; margin: 22px 0 20px; }
+  h1 b { display: block; color: var(--green); text-shadow: 0 0 50px rgba(0, 255, 136, 0.35); }
+  .lead { font-size: 18px; color: var(--soft); max-width: 480px; }
+  .cta { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 34px; }
+  .meta { font-size: 13px; color: var(--muted); }
+  .meta strong { color: var(--soft); font-weight: 600; }
+  .window {
+    border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.7), 0 0 90px rgba(0, 255, 136, 0.1);
+  }
+  .hero .stage { perspective: 1600px; }
+  .hero .window { transform: rotateY(-14deg) rotateX(5deg) rotateZ(1deg); transition: transform 0.6s ease; }
+  .hero .stage:hover .window { transform: none; }
+
+  /* ---- sections */
+  section { padding: 78px 0; }
+  .eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+  h2 { font-size: clamp(30px, 3.6vw, 44px); font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin: 10px 0 12px; }
+  .sub { color: var(--soft); max-width: 620px; font-size: 17px; }
+  .center { text-align: center; }
+  .center .sub { margin: 0 auto; }
+
+  /* ---- video */
+  .video {
+    position: relative; margin-top: 40px; aspect-ratio: 16 / 9; border-radius: 22px; overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.16); background: #000 center / cover no-repeat;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.65);
+  }
+  .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video button {
+    position: absolute; inset: 0; width: 100%; border: 0; cursor: pointer;
+    background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.45));
+    display: flex; align-items: center; justify-content: center;
+  }
+  .video button span {
+    width: 96px; height: 96px; border-radius: 50%; background: var(--silver); color: #101014;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 14px rgba(255, 255, 255, 0.12), 0 20px 50px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s;
+  }
+  .video button:hover span { transform: scale(1.08); }
+
+  /* ---- features */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 26px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .card:hover { transform: translateY(-4px); border-color: rgba(255, 255, 255, 0.24); }
+  .icon {
+    width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #f1f1f5, #b9bcc8); color: #101014; margin-bottom: 18px;
+  }
+  .card h3 { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+  .card p { color: var(--soft); font-size: 14.5px; }
+
+  /* ---- screenshots */
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
+  .shots figure { margin: 0; }
+  .shots .window { border-radius: 12px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); transition: transform 0.25s; }
+  .shots figure:hover .window { transform: scale(1.03); }
+  .shots .window { cursor: zoom-in; }
+  .shots figcaption { margin-top: 12px; font-size: 14px; color: var(--soft); text-align: center; }
+
+  /* ---- enlarged screenshot */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+    background: rgba(5, 5, 7, 0.9); backdrop-filter: blur(10px);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s; cursor: zoom-out;
+  }
+  .lightbox.open { opacity: 1; pointer-events: auto; }
+  .lightbox figure { margin: 0; max-width: min(1500px, 92vw); transform: scale(0.96); transition: transform 0.2s; cursor: default; }
+  .lightbox.open figure { transform: none; }
+  .lightbox img { max-height: 82vh; width: auto; margin: 0 auto; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.16); box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8); }
+  .lightbox figcaption { margin-top: 14px; text-align: center; color: var(--soft); font-size: 15px; }
+  .lightbox button {
+    position: absolute; width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); cursor: pointer;
+    background: rgba(255, 255, 255, 0.08); color: var(--text); display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .lightbox button:hover { background: rgba(255, 255, 255, 0.2); }
+  .lightbox .close { top: 20px; right: 20px; }
+  .lightbox .prev { left: 20px; top: calc(50% - 24px); }
+  .lightbox .next { right: 20px; top: calc(50% - 24px); }
+
+  /* ---- steps */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; counter-reset: step; }
+  .step { padding: 26px; border-radius: 20px; border: 1px dashed rgba(255, 255, 255, 0.16); }
+  .step::before {
+    counter-increment: step; content: counter(step);
+    display: flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 50%; font-weight: 900;
+    background: rgba(0, 255, 136, 0.12); color: var(--green); border: 1px solid rgba(0, 255, 136, 0.3); margin-bottom: 16px;
+  }
+  .step h3 { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+  .step p { color: var(--soft); font-size: 14.5px; }
+
+  /* ---- closing */
+  .final { text-align: center; padding: 96px 0; position: relative; }
+  .final::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background: radial-gradient(620px 320px at 50% 55%, rgba(0, 255, 136, 0.12), transparent 70%);
+  }
+  .final img { width: 92px; height: 92px; border-radius: 26px; margin: 0 auto 22px; box-shadow: 0 0 60px rgba(255, 255, 255, 0.22); }
+  .final .cta { justify-content: center; }
+  .note { margin-top: 18px; font-size: 13px; color: var(--muted); max-width: 520px; margin-left: auto; margin-right: auto; }
+
+  footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; gap: 22px; flex-wrap: wrap; align-items: center; }
+  footer a:hover { color: var(--text); }
+  footer .right { margin-left: auto; }
+
+  @media (max-width: 900px) {
+    .hero { padding: 48px 0 64px; }
+    .hero .wrap { grid-template-columns: 1fr; }
+    .hero .window { transform: none; }
+    .grid, .shots, .steps { grid-template-columns: 1fr; }
+    section { padding: 56px 0; }
+    header .button { display: none; }
+    footer .right { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="img/logo.png" alt="" /><span>TCZEW<i>BOOSTER</i></span></a>
+    <div class="langs" id="langs">
+      <button data-lang="en">EN</button>
+      <button data-lang="pl">PL</button>
+      <button data-lang="ru">RU</button>
+    </div>
+    <a class="button download" href="#"><span data-t="download"></span></a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <span class="tag" data-t="tag"></span>
+        <h1><span data-t="h1a"></span><b data-t="h1b"></b></h1>
+        <p class="lead" data-t="lead"></p>
+        <div class="cta">
+          <a class="button big download" href="#">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12" /><path d="M7 10l5 5 5-5" /><path d="M5 20h14" /></svg>
+            <span data-t="downloadBig"></span>
+          </a>
+          <div class="meta"><strong data-t="version"></strong><br /><span data-t="requires"></span></div>
+        </div>
+      </div>
+      <div class="stage"><div class="window"><img src="img/dashboard.jpg" alt="TczewBooster" /></div></div>
+    </div>
+  </div>
+
+  <section id="video" class="center">
+    <div class="wrap">
+      <div class="eyebrow" data-t="videoEyebrow"></div>
+      <h2 data-t="videoTitle"></h2>
+      <p class="sub" data-t="videoSub"></p>
+      <div class="video" id="video-box" style="background-image:url(img/thumbnail.jpg)">
+        <button aria-label="Play">
+          <span><svg width="38" height="38" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11.3-6.8a1 1 0 0 0 0-1.72L9.5 4.34A1 1 0 0 0 8 5.2z" /></svg></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="eyebrow" data-t="featEyebrow"></div>
+      <h2 data-t="featTitle"></h2>
+      <p class="sub" data-t="featSub"></p>
+      <div class="grid" id="features-grid"></div>
+    </div>
+  </section>
+
+  <section id="screens" class="center">
+    <div class="wrap">
+      <div class="eyebrow" data-t="shotsEyebrow"></div>
+      <h2 data-t="shotsTitle"></h2>
+      <div class="shots">
+        <figure><div class="window"><img src="img/dashboard.jpg" alt="" loading="lazy" /></div><figcaption data-t="shot1"></figcaption></figure>
+        <figure><div class="window"><img src="img/optimizations.jpg" alt="" loading="lazy" /></div><figcaption data-t="shot2"></figcaption></figure>
+        <figure><div class="window"><img src="img/games.jpg" alt="" loading="lazy" /></div><figcaption data-t="shot3"></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="wrap">
+      <div class="eyebrow" data-t="stepsEyebrow"></div>
+      <h2 data-t="stepsTitle"></h2>
+      <div class="steps">
+        <div class="step"><h3 data-t="step1"></h3><p data-t="step1d"></p></div>
+        <div class="step"><h3 data-t="step2"></h3><p data-t="step2d"></p></div>
+        <div class="step"><h3 data-t="step3"></h3><p data-t="step3d"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="final">
+    <div class="wrap">
+      <img src="img/logo.png" alt="" />
+      <h2 data-t="finalTitle"></h2>
+      <p class="sub" style="margin:0 auto" data-t="finalSub"></p>
+      <div class="cta">
+        <a class="button big download" href="#">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12" /><path d="M7 10l5 5 5-5" /><path d="M5 20h14" /></svg>
+          <span data-t="downloadBig"></span>
+        </a>
+      </div>
+      <p class="note" data-t="note"></p>
+    </div>
+  </div>
+</main>
+
+<div class="lightbox" id="lightbox">
+  <button class="close" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19" /></svg></button>
+  <button class="prev" aria-label="Previous"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7" /></svg></button>
+  <button class="next" aria-label="Next"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7" /></svg></button>
+  <figure><img alt="" /><figcaption></figcaption></figure>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 mati_tcz</span>
+    <a href="https://www.youtube.com/@mati_tcz" target="_blank" rel="noopener">YouTube: @mati_tcz</a>
+    <span>Discord: mati.tcz</span>
+    <span class="right" data-t="version"></span>
+  </div>
+</footer>
+
+<script>
+// The installer always carries the same name, so this link serves the newest release
+const DOWNLOAD = 'https://github.com/m4titcz-lang/TczewBooster-releases/releases/latest/download/TczewBooster-Setup.exe';
+const VIDEO = '_ICM-o0dW6E';
+const VERSION = '1.0.1';
+
+const ICONS = {
+  bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+  chip: '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  pad: '<path d="M6 8h12a4 4 0 0 1 4 4v2a3 3 0 0 1-5.6 1.5L15.5 14h-7l-.9 1.5A3 3 0 0 1 2 14v-2a4 4 0 0 1 4-4z"/><path d="M7 11v2M6 12h2M16 12h.01"/>',
+  gauge: '<path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-6"/>',
+  power: '<path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/>',
+  broom: '<path d="M14 4l6 6"/><path d="M17 7l-7 7"/><path d="M10 14l-6 2 4 4 2-6z"/>',
+};
+const FEATURES = [
+  ['bolt', 'f1'], ['chip', 'f2'], ['pad', 'f3'], ['gauge', 'f4'], ['power', 'f5'], ['broom', 'f6'],
+];
+
+const TEXTS = {
+  en: {
+    title: 'TczewBooster — More FPS. Less latency.',
+    download: 'Download', downloadBig: 'Download for Windows',
+    tag: 'Windows optimizer for gamers',
+    h1a: 'More FPS.', h1b: 'Less latency.',
+    lead: 'TczewBooster turns off what slows Windows down and tunes it for games — in one click, with every change reversible.',
+    version: `Version ${VERSION}`, requires: 'Windows 10 / 11 · 64-bit',
+    videoEyebrow: 'Preview', videoTitle: 'See it in 90 seconds', videoSub: 'A full tour of the app: from the first launch to game profiles and GPU overclock.',
+    featEyebrow: 'Features', featTitle: 'Everything in one app', featSub: 'No scripts, no registry digging. Each optimization says what it does and how much it helps.',
+    f1: '54 optimizations', f1d: 'FPS and latency, debloat, registry and system tweaks. Apply the recommended set with one click or pick them one by one.',
+    f2: 'Hardware scanner', f2d: 'CPU, graphics card, memory, drives and display read in seconds — the app tunes itself to your PC.',
+    f3: 'Game profiles', f3d: 'Separate settings for every game. CS2 autoexec and launch options, ready graphics presets for GTA V, Fortnite and Roblox.',
+    f4: 'GPU overclock', f4d: 'Clock offsets, power limit and your own fan curve for NVIDIA cards, through the official driver interface.',
+    f5: 'Startup control', f5d: 'See what starts with Windows and how much each program slows the boot. Switch it off without removing anything.',
+    f6: 'Boost Up', f6d: 'Clear temp files, shader caches and RAM, fix the network and system files — before every gaming session.',
+    shotsEyebrow: 'Screenshots', shotsTitle: 'Clean, fast, in three languages',
+    shot1: 'Dashboard', shot2: 'Optimizations', shot3: 'Counter-Strike 2 config',
+    stepsEyebrow: 'Getting started', stepsTitle: 'Ready in a minute',
+    step1: 'Download', step1d: 'Get the installer and run it. The app updates itself from then on.',
+    step2: 'Scan', step2d: 'TczewBooster reads your hardware and checks which optimizations are still off.',
+    step3: 'Apply', step3d: 'Press “Apply Recommended”. Create a restore point first — one button in the app.',
+    finalTitle: 'Get more out of your PC', finalSub: 'Available in English, Polish and Russian.',
+    note: 'Windows may show a SmartScreen warning because the app is not signed with a paid certificate. Choose “More info” → “Run anyway”.',
+  },
+  pl: {
+    title: 'TczewBooster — Więcej FPS. Mniej opóźnień.',
+    download: 'Pobierz', downloadBig: 'Pobierz na Windows',
+    tag: 'Optymalizator Windows dla graczy',
+    h1a: 'Więcej FPS.', h1b: 'Mniej opóźnień.',
+    lead: 'TczewBooster wyłącza to, co spowalnia Windows, i stroi go pod gry — jednym kliknięciem, a każdą zmianę da się cofnąć.',
+    version: `Wersja ${VERSION}`, requires: 'Windows 10 / 11 · 64-bit',
+    videoEyebrow: 'Preview', videoTitle: 'Zobacz w 90 sekund', videoSub: 'Cała aplikacja w jednym filmie: od pierwszego uruchomienia po profile gier i overclock GPU.',
+    featEyebrow: 'Funkcje', featTitle: 'Wszystko w jednej aplikacji', featSub: 'Bez skryptów i grzebania w rejestrze. Każda optymalizacja ma opis działania i siłę efektu.',
+    f1: '54 optymalizacje', f1d: 'FPS i opóźnienia, debloat, rejestr i system. Włącz zalecany zestaw jednym kliknięciem albo wybierz je pojedynczo.',
+    f2: 'Skaner sprzętu', f2d: 'Procesor, karta graficzna, pamięć, dyski i monitor odczytane w kilka sekund — aplikacja dopasowuje się do Twojego PC.',
+    f3: 'Profile gier', f3d: 'Osobne ustawienia dla każdej gry. Autoexec i opcje uruchamiania CS2, gotowa grafika do GTA V, Fortnite i Roblox.',
+    f4: 'Overclock GPU', f4d: 'Taktowanie, limit mocy i własna krzywa wentylatora dla kart NVIDIA, przez oficjalny interfejs sterownika.',
+    f5: 'Autostart', f5d: 'Zobacz, co startuje z Windows i jak bardzo spowalnia uruchamianie. Wyłącz bez usuwania czegokolwiek.',
+    f6: 'Przyspieszenie', f6d: 'Czyszczenie plików tymczasowych, cache shaderów i RAM-u, naprawa sieci i plików systemowych — przed każdą sesją.',
+    shotsEyebrow: 'Zrzuty ekranu', shotsTitle: 'Czysto, szybko, w trzech językach',
+    shot1: 'Panel', shot2: 'Optymalizacje', shot3: 'Config Counter-Strike 2',
+    stepsEyebrow: 'Jak zacząć', stepsTitle: 'Gotowe w minutę',
+    step1: 'Pobierz', step1d: 'Ściągnij instalator i uruchom go. Od tej pory aplikacja aktualizuje się sama.',
+    step2: 'Przeskanuj', step2d: 'TczewBooster odczyta Twój sprzęt i sprawdzi, które optymalizacje są jeszcze wyłączone.',
+    step3: 'Zastosuj', step3d: 'Kliknij „Zastosuj zalecane”. Najpierw utwórz punkt przywracania — to jeden przycisk w aplikacji.',
+    finalTitle: 'Wyciśnij więcej ze swojego PC', finalSub: 'Dostępny po polsku, angielsku i rosyjsku.',
+    note: 'Windows może pokazać ostrzeżenie SmartScreen, bo aplikacja nie jest podpisana płatnym certyfikatem. Wybierz „Więcej informacji” → „Uruchom mimo to”.',
+  },
+  ru: {
+    title: 'TczewBooster — Больше FPS. Меньше задержек.',
+    download: 'Скачать', downloadBig: 'Скачать для Windows',
+    tag: 'Оптимизатор Windows для геймеров',
+    h1a: 'Больше FPS.', h1b: 'Меньше задержек.',
+    lead: 'TczewBooster отключает то, что тормозит Windows, и настраивает систему под игры — одним нажатием, и каждое изменение можно отменить.',
+    version: `Версия ${VERSION}`, requires: 'Windows 10 / 11 · 64 бита',
+    videoEyebrow: 'Превью', videoTitle: 'Посмотрите за 90 секунд', videoSub: 'Всё приложение в одном ролике: от первого запуска до профилей игр и разгона видеокарты.',
+    featEyebrow: 'Возможности', featTitle: 'Всё в одном приложении', featSub: 'Без скриптов и копания в реестре. У каждой оптимизации описано, что она делает и насколько помогает.',
+    f1: '54 оптимизации', f1d: 'FPS и задержка, очистка Windows, реестр и система. Включите рекомендуемый набор одним нажатием или выбирайте по одной.',
+    f2: 'Сканер железа', f2d: 'Процессор, видеокарта, память, диски и монитор определяются за секунды — приложение подстраивается под ваш компьютер.',
+    f3: 'Профили игр', f3d: 'Отдельные настройки для каждой игры. Autoexec и параметры запуска CS2, готовая графика для GTA V, Fortnite и Roblox.',
+    f4: 'Разгон видеокарты', f4d: 'Частоты, лимит мощности и своя кривая вентилятора для карт NVIDIA через официальный интерфейс драйвера.',
+    f5: 'Автозапуск', f5d: 'Смотрите, что стартует вместе с Windows и насколько замедляет загрузку. Отключайте, ничего не удаляя.',
+    f6: 'Ускорение', f6d: 'Очистка временных файлов, кэша шейдеров и памяти, починка сети и системных файлов — перед каждой игрой.',
+    shotsEyebrow: 'Скриншоты', shotsTitle: 'Чисто, быстро, на трёх языках',
+    shot1: 'Панель', shot2: 'Оптимизации', shot3: 'Конфиг Counter-Strike 2',
+    stepsEyebrow: 'С чего начать', stepsTitle: 'Готово за минуту',
+    step1: 'Скачайте', step1d: 'Загрузите установщик и запустите его. Дальше приложение обновляется само.',
+    step2: 'Просканируйте', step2d: 'TczewBooster определит ваше железо и проверит, какие оптимизации ещё выключены.',
+    step3: 'Примените', step3d: 'Нажмите «Применить рекомендуемые». Сначала создайте точку восстановления — это одна кнопка в приложении.',
+    finalTitle: 'Выжмите больше из своего ПК', finalSub: 'Доступно на английском, польском и русском.',
+    note: 'Windows может показать предупреждение SmartScreen, потому что приложение не подписано платным сертификатом. Выберите «Подробнее» → «Выполнить в любом случае».',
+  },
+};
+
+function setLanguage(language) {
+  const texts = TEXTS[language];
+  document.documentElement.lang = language;
+  document.title = texts.title;
+  for (const node of document.querySelectorAll('[data-t]')) node.textContent = texts[node.dataset.t];
+  document.getElementById('features-grid').innerHTML = FEATURES.map(([icon, key]) => `
+    <div class="card">
+      <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[icon]}</svg></div>
+      <h3>${texts[key]}</h3>
+      <p>${texts[key + 'd']}</p>
+    </div>`).join('');
+  for (const button of document.querySelectorAll('#langs button')) button.classList.toggle('on', button.dataset.lang === language);
+  try { localStorage.setItem('language', language); } catch { /* private window */ }
+}
+
+for (const link of document.querySelectorAll('.download')) link.href = DOWNLOAD;
+for (const button of document.querySelectorAll('#langs button')) button.addEventListener('click', () => setLanguage(button.dataset.lang));
+
+// The player is loaded only when asked for, so the page itself stays light
+document.querySelector('#video-box button').addEventListener('click', () => {
+  document.getElementById('video-box').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${VIDEO}?autoplay=1&rel=0" title="TczewBooster preview" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+});
+
+// Screenshots open enlarged; arrows (on screen or on the keyboard) step through them
+const lightbox = document.getElementById('lightbox');
+const shots = [...document.querySelectorAll('.shots figure')];
+let shown = 0;
+function showShot(index) {
+  shown = (index + shots.length) % shots.length;
+  lightbox.querySelector('img').src = shots[shown].querySelector('img').src;
+  lightbox.querySelector('figcaption').textContent = shots[shown].querySelector('figcaption').textContent;
+  lightbox.classList.add('open');
+}
+shots.forEach((shot, index) => shot.querySelector('.window').addEventListener('click', () => showShot(index)));
+lightbox.addEventListener('click', event => {
+  if (event.target.closest('.prev')) showShot(shown - 1);
+  else if (event.target.closest('.next')) showShot(shown + 1);
+  else if (!event.target.closest('figure')) lightbox.classList.remove('open');
+});
+document.addEventListener('keydown', event => {
+  if (!lightbox.classList.contains('open')) return;
+  if (event.key === 'Escape') lightbox.classList.remove('open');
+  if (event.key === 'ArrowLeft') showShot(shown - 1);
+  if (event.key === 'ArrowRight') showShot(shown + 1);
+});
+
+let saved = null;
+try { saved = localStorage.getItem('language'); } catch { /* private window */ }
+const browser = (navigator.language || 'en').slice(0, 2);
+setLanguage(TEXTS[saved] ? saved : TEXTS[browser] ? browser : 'en');
+</script>
+</body>
+</html>
